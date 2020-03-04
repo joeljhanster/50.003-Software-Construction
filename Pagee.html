@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>My web page</title>
+	<link rel="stylesheet" href="page2.css" />
+	<meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.13/es5-shim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/4.1.1/es6-promise.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.8/angular.min.js"></script>
+    <script src="file://C:/Users/noorb/myFirstRainbowProject/node_modules/rainbow-web-sdk/dist/lib/loader-sdk.min.js"></script>
+    <script src="C:/Users/noorb/myFirstRainbowProject/node_modules/rainbow-web-sdk/dist/lib/rainbow-sdk.min.js"></script>
+    <script src="C:/Users/noorb/myFirstRainbowProject/node_modules/rainbow-web-sdk/dist/lib/vendors-sdk.min.js"></script>
+    <script src="https://unpkg.com/vue"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+<!--     <script src="./page1.js"></script>
+    <script src="./chatbot.js"></script> -->
+</head>
+  <body>
+    <div id="root">
+    	Sign in to Rainbow Chat
+    	<p v-text="email">
+    	</p>
+<!--     	<form>
+  		<input type="text" name="foobar" v-model="foobar">
+  		<button type="submit" @click.stop.prevent="submit()">Submit</button>
+		</form> -->
+    	<input placeholder="email" type="email" name="email">
+    	<input type="password" name="password" placeholder="password">
+    	<br>
+    	<form action="./secondPage.html" > 
+  		<button type="submit">Log In</button>
+		</form> 
+		</form>
+    </div>
+
+    <script>
+        new Vue({
+            el: '#root',
+            data: {
+            	email: ''
+            } 
+        })
+    </script>
+  </body>
+</html>
