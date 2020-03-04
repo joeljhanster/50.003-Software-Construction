@@ -15,26 +15,24 @@
     <script src="C:/Users/noorb/myFirstRainbowProject/node_modules/rainbow-web-sdk/dist/lib/rainbow-sdk.min.js"></script>
     <script src="C:/Users/noorb/myFirstRainbowProject/node_modules/rainbow-web-sdk/dist/lib/vendors-sdk.min.js"></script>
     <script src="https://unpkg.com/vue"></script>
+    <script data-main = "scripts/main" src = "C:\Users\noorb\node_modules\requirejs\bin\r.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue"></script>
-<!--     <script src="./page1.js"></script>
-    <script src="./chatbot.js"></script> -->
+    <script src="./page1.js"></script>
+    <script src="./chatbot.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
   <body>
-    <div id="root">
-    	Sign in to Rainbow Chat
+<!--     <div id="root">
+    	<h1>Log In</h1>
     	<p v-text="email">
     	</p>
-<!--     	<form>
-  		<input type="text" name="foobar" v-model="foobar">
-  		<button type="submit" @click.stop.prevent="submit()">Submit</button>
-		</form> -->
-    	<input placeholder="email" type="email" name="email">
-    	<input type="password" name="password" placeholder="password">
-    	<br>
-    	<form action="./secondPage.html" > 
-  		<button type="submit">Log In</button>
-		</form> 
-		</form>
+    	<div class="boxed">
+    		<input type="email" name="email" placeholder="email" >
+    		<input type="password" name="password" placeholder="password">
+   			<form action="./secondPage.html" > 
+ 			<button type="submit">Log In</button>
+ 			</form> 
+ 		</div> 
     </div>
 
     <script>
@@ -44,6 +42,13 @@
             	email: ''
             } 
         })
-    </script>
+    </script> -->
+
+    <div class="boxed" action="Pagee.html" method="post">
+    	<h1>Login to Rainbow Help</h1>
+    	<input type="text" name="" placeholder="Email">
+    	<input type="password" name="" placeholder="password">
+    	<input type="submit" onClick="location.href='secondPage.html'" value='Login'>\
+    </div>
   </body>
-</html>
+</html> 
