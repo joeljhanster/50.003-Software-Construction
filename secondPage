@@ -2,9 +2,13 @@
 <html>
 <head>
 	<title>Second Page</title>
+	<link rel="stylesheet" href="style1.css">
 </head>
 <body>
-	<button type="submit">Chat</button>
-	<button type="submit">Audio</button>
+	<form class="box1" action="secondPagee.html" method="post">
+    	<!-- <button type="submit">Chat</button> -->
+    	<input type='button' id='Chat-button' value='Chat' />
+    	<input type='button' id='Audio-button' value='Audio' />
+    </form>
 </body>
 </html>
