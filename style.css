@@ -37,7 +37,7 @@ body{
 	transition: 0.25s;
 }
 
-.boxed input[type="text"]:focus,.box input[type="password"]{
+.boxed input[type="text"]:focus,.boxed input[type="password"]{
 	width:280px;
 	border-color: #2ecc71;
 }
