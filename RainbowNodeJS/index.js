@@ -1,14 +1,20 @@
 // Import modules
-var fs = require("fs");
+require('dotenv').config();
+const fs = require("fs");
+const path = require('path');
+const express = require ('express');
+const bodyParser = require ('body-parser');
+const favicon = require('express-favicon');
+const app = express();
 var MongoClient = require("mongodb").MongoClient;
 var _ = require("underscore");
+var cors = require('cors');
 
 // Define variables
-const url = 'mongodb://localhost:27017';    // Connection url
-const dbName = 'agents';                    // Database Name
+const url = 'mongodb://heroku_1whs0tq1:kq8e627o53cv9trrtd6q07n00i@ds119728.mlab.com:19728/heroku_1whs0tq1';    // Connection url
+const dbName = 'heroku_1whs0tq1';           // Database Name
 var matchedDict = {};                       // Initialize dictionary to check if agent is attached to a customer
 var skillsDict = {};                        // Initialize dictionary to attach customer to a requested skill
-var guestDict = {};                         // Initialize dictionary to contain email and password of guest accounts
 
 // Load the SDK
 const ChatBot = require("rainbow-chatbot");
@@ -24,51 +30,36 @@ const scenario = require("./scenario.json");
 async function createGuest(firstName, lastName) {
     // create the guest account
     let language = "en-US";
-    let ttl = 300;  // active for 5min
+    let ttl = 600;  // active for 5min
     //let ttl = 86400; // active for a day
-    guest = await nodeSDK.admin.createGuestUser(firstName, lastName, language, ttl);
-    guestId = guest.id;
-    guestEmail = guest.loginEmail;
-    guestPassword = guest.password;
-    console.log (`Id is ${guestId}`)
-    console.log (`Email is ${guestEmail}`)
-    console.log (`Password is ${guestPassword}`)
-    
-    // store guests' login details into dictionary
-    guestDict[guestId] = [guestEmail, guestPassword];
+    let guest = await nodeSDK.admin.createGuestUser(firstName, lastName, language, ttl);
+    let guestId = guest.id;
 
+    // store guests' details into JSON file
+    let filePath = path.join(__dirname,`${guestId}.json`)
+    fs.writeFileSync(filePath, JSON.stringify(guest, null, 2));
+    
     // chatbot to automatically send message to guest user
     let guestContact = await nodeSDK.contacts.getContactById(guestId, true);
     let conversation = await nodeSDK.conversations.openConversationForContact(guestContact);
     await nodeSDK.im.sendMessageToConversation(conversation, `Hello, I am the customer support bot for ABC Bank. If you require any assistance, please type #support :)`);
-    //return guestId, guestEmail, guestPassword
+
+    return filePath
 }
 
-// USING RAINBOW WEB SDK
+// USING RAINBOW WEB SDK (BACKEND TO SIGNAL TO FRONT END)
 // Function to establish connection between Agent and Customer
-async function establishConnection(agentId, customerName, skill, customerId) {
+async function establishConnection(agentId, skill, file) {
     // sign into guest account to initiate conversation with matched agent
-    customerEmail = guestDict[customerId][0]
-    customerPassword = guestDict[customerId][1]
-    console.log (`This is customer email ${customerEmail}`)
-    console.log (`This is customer password ${customerPassword}`)
+    let customerId = file.id;
+    let customerEmail = file.loginEmail;
+    let customerPassword = file.password;
+    let customerName = file.displayName;
+    console.log (`This is customer ID ${customerId}`);
+    console.log (`This is customer email ${customerEmail}`);
+    console.log (`This is customer password ${customerPassword}`);
 
-    results = await rainbowSDK.connection.signin(customerEmail, customerPassword);
-    console.log(`This is the results: ${results}`);
-
-    // results = await rainbowSDK.admin.askTokenOnBehalf(customerEmail, customerPassword)
-    // token = JSON.stringify(results.token)
-    // await rainbowSDK.connection.signinSandBoxWithToken(token);
-    // nodeSDK.connection.signinSandBoxWithToken(token).then((result) => {
-    //     if (result) {
-    //         console.log(result)
-    //     }
-    //     else {
-    //         console.log ("Failed to login successfully")
-    //         console.log (`This is the results: ${result}`)
-    //     }
-    // })
-    // .catch((err) => console.error (`Failed to login successfully due to: ${err}`))
+    // results = await rainbowSDK.connection.signin(customerEmail, customerPassword);
 
     // open conversation between agent and customer
     console.log(`This is the agent's Id: ${agentId}`);
@@ -76,6 +67,7 @@ async function establishConnection(agentId, customerName, skill, customerId) {
     let conversation = await nodeSDK.conversations.openConversationForContact(agentContact);
     await nodeSDK.im.sendMessageToConversation(conversation, `Hello, I am ${customerName}. I need your help in ${skill}!`);
 }
+
 // Function to check for available agents via MongoDB
 async function checkAgents (skill, customerId, count) {
     MongoClient.connect(url, {useUnifiedTopology: true}, async function(err, client) {
@@ -98,6 +90,8 @@ async function checkAgents (skill, customerId, count) {
         //     }
         // })
         // .catch((err) => console.error(`Failed to find document: $(err)`))
+        
+        // check if any available agents
         col.findOne({"presence": "online"})
         .then((result) => {
             if (result) {
@@ -106,7 +100,7 @@ async function checkAgents (skill, customerId, count) {
                     matchedDict[agentId] = customerId;
                     col.updateOne({"id": agentId}, {$set:{"presence": "busy"}});    // temporarily change agent's presence status
                 }
-            } else if (count <= 10000) {
+            } else if (count <= 100) {
                 console.log('No document matches the provided query.');
                 count = count + 1;
                 checkAgents (skill, customerId, count);
@@ -117,6 +111,22 @@ async function checkAgents (skill, customerId, count) {
     });
 }
 
+// Function to clear guest
+async function clearGuest(customerId) {
+
+    let agentId = _.invert(matchedDict)[customerId]
+    let skill = skillsDict[customerId]
+
+    MongoClient.connect(url, {useUnifiedTopology: true}, async function(err, client) {
+        const col = client.db(dbName).collection(skill);
+        col.updateOne({"id": agentId}, {$set:{"presence": "online"}})  // change back the presence of the agent on MongoDB
+        .then (() => {
+            matchedDict[agentId] = "";
+            delete skill; 
+        })
+    })
+}
+
 // Instantiate the SDK
 nodeSDK = new RainbowSDK(options);
 nodeSDK.start().then( () => {
@@ -125,13 +135,50 @@ nodeSDK.start().then( () => {
     return chatbot.start();
    
 }).then( () => {
-    // Create the guest account (link to frontend - create guest account button)
-    let firstName = "Guest";
-    let lastName = "17";
-    console.log("Creating guest account");
-    createGuest(firstName, lastName);
-    //var guestId, guestEmail, guestPassword = createGuest(firstName, lastName);
+    // CREATE THE GUEST ACCOUNT
+    app.use(cors());
+    app.use(bodyParser.urlencoded({ extended: false }));
+    app.use(bodyParser.json());
+    app.use(favicon(__dirname + '/public/favicon.ico'));
 
+    // GET request when creating guest account
+    app.get('/create_guest', function(req,res){
+        res.setHeader('Access-Control-Allow-Origin', '*')
+        console.log("This is the query: " + req.query);
+
+        var firstName = req.query.firstName;
+        var lastName = req.query.lastName;
+        console.log (`First Name is ${firstName}, Last Name is ${lastName}`)
+        createGuest(firstName, lastName).then ( (filePath) => {
+            console.log(`This is the file path ${filePath}`)
+            res.sendFile(filePath) 
+        });
+    })
+
+    // GET request for agent ID to establish connection
+    app.get('/establish_connection', function(req,res) {
+        res.setHeader('Access-Control-Allow-Origin', '*')
+        console.log("This is the query: " + req.query);
+
+        var customerId = req.query.id;
+        // Check if customer is assigned to an agent
+        if (customerId in _.invert(matchedDict)) {
+            let dict = {}
+            dict["agentId"] = (_.invert(matchedDict)[customerId]);
+            dict["skill"] = skillsDict[customerId];
+            console.log(dict)
+            res.send(dict)
+        }
+        else {
+            res.send("Not matched with Agent")
+        }
+    })
+
+    app.listen(process.env.PORT || 5000, function(){
+        console.log ("Started on PORT 5000");
+    })    
+
+    // CHATBOT RESPONSES
     chatbot.onMessage((tag, step, content, from, done) => {
         // Select type of support, check for available agents
         if (tag === "support" && step === "selectType") {
@@ -152,20 +199,15 @@ nodeSDK.start().then( () => {
         
         // Customer to confirm type of support
         else if (tag === "support" && (step === "banking" || step === "investment" || step === "generalEnquiries")) {
+            let agentId = (_.invert(matchedDict))[from.id]
             // Check that the customer is correctly matched to an agent
             if (content === "Yes" && Object.values(matchedDict).indexOf(from.id) > -1) {
                 done ('agentFound');
             } else if (content === "No") {
-                matchedDict[(_.invert(matchedDict))[from.id]] = "";
-                delete skillsDict[from.id];
-                // change back the presence of the agent on MongoDB
-                // get presence of agent using agent's ID
-                // 
-
+                clearGuest(from.id)
                 done ('selectType');
             } else {
-                matchedDict[(_.invert(matchedDict))[from.id]] = "";
-                delete skillsDict[from.id];
+                clearGuest(from.id)
                 done();
             }
         } 
@@ -173,17 +215,26 @@ nodeSDK.start().then( () => {
         // Establish connection between agent and customer, open one-to-one conversation
         else if (tag === "support" && step === "establishConnection") {
             console.log("Executing external");
-            establishConnection((_.invert(matchedDict))[from.id], from._displayName, skillsDict[from.id], from.id)
+
+            let file = require(`./${from.id}.json`);   
+            let agentId = _.invert(matchedDict)[from.id]
+            let skill = skillsDict[from.id]
+
+            MongoClient.connect(url, {useUnifiedTopology: true}, async function(err, client) {
+                const col = client.db(dbName).collection(skill);
+                col.updateOne({"id": agentId}, {$inc:{"chatsReceived": 1}})
+            })
+ 
+            establishConnection(agentId, skillsDict[from.id], file)
             .then(() => {
                 done();
             })
-        } 
+        }
 
         // Reset values stored in the respective dictionaries, conversation ended
         else if (tag === "support" && step === "done"){
             if (content === "Yes") {
-                matchedDict[(_.invert(matchedDict))[from.id]] = "";
-                delete skillsDict[from.id];
+                clearGuest(from.id)
                 done();
             } else if (content === "No") {
                 done("done");
@@ -200,6 +251,7 @@ nodeSDK.start().then( () => {
     }, this);
 });
 
+// INITIALIZING THE MONGODB DATABASE
 nodeSDK.events.on("rainbow_onready", () => {
 
     // Get your network's list of contacts
@@ -245,17 +297,12 @@ nodeSDK.events.on("rainbow_onready", () => {
     var genEnq = JSON.parse(JSON.stringify(genEnq_list));
     var investment = JSON.parse(JSON.stringify(investment_list));
 
-    fs.writeFileSync("banking.json",banking);
-    fs.writeFileSync("general_enquiries.json",genEnq);
-    fs.writeFileSync("investment.json",investment);
-
     console.log("Banking: \n", banking);
     console.log("\nGeneral Enquiries: \n", genEnq);
     console.log("\nInvestment: \n", investment)
     
     // Connect using MongoClient
-    MongoClient.connect(url, {useUnifiedTopology: true}, function(err, client) {
-
+    MongoClient.connect(url, {useNewUrlParser: true, useUnifiedTopology: true}, function(err, client) {
         // Create a banking collection
         const bank_col = client.db(dbName).collection('banking');
         bank_col.countDocuments(function (err, count) {
@@ -285,14 +332,14 @@ nodeSDK.events.on("rainbow_onready", () => {
     });
 });
 
+// UPDATE THE DATABASE WHEN CONTACT PRESENCE OF AGENTS ARE CHANGED
 nodeSDK.events.on("rainbow_oncontactpresencechanged", function(contact) {
     // do something when the connection to Rainbow is up
     var presence = contact.presence;    // Presence information
     var status = contact.status;        // Additionnal information if exists
 
     // Connect using MongoClient
-    MongoClient.connect(url, {useUnifiedTopology: true}, function(err, client) {
-
+    MongoClient.connect(url, {useNewUrlParser: true, useUnifiedTopology: true}, function(err, client) {
         // Update the agent's presence status for Banking
         const bank_col = client.db(dbName).collection('banking');
         if (contact.tags.includes('banking')) {
