@@ -2,14 +2,35 @@
   "name": "rainbownodejs",
   "version": "1.0.0",
   "description": "",
-  "main": "update_database.js",
+  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "angular": "^1.7.9",
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "domino": "^2.1.4",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-favicon": "^2.0.1",
     "fs": "0.0.1-security",
-    "rainbow-node-sdk": "^1.67.1"
+    "jquery": "^3.4.1",
+    "mongodb": "^3.5.4",
+    "mongoose": "^5.9.6",
+    "morgan": "^1.9.1",
+    "path": "^0.12.7",
+    "rainbow-chatbot": "^1.40.0",
+    "rainbow-node-sdk": "^1.68.0",
+    "rainbow-web-sdk": "^1.67.0",
+    "requirejs": "^2.3.6",
+    "underscore": "^1.9.2"
+  },
+  "devDependencies": {
+    "http-server": "^0.12.1"
   }
 }

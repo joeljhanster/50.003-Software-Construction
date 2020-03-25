@@ -1,0 +1,86 @@
+{
+    "support": {
+        "aMessage": {
+            "type": "message",
+            "value": "Welcome to ABC Bank! This is our customer support call center!",
+            "waiting": 500,
+            "next": "selectType"
+        },
+        "selectType": {
+            "type": "choice",
+            "value": "How can we help you?",
+            "list": ["Banking", "Investment", "General Enquiries"],
+            "invalid": "Only the proposed answers are valid",
+            "waiting": 500,
+            "next": ["banking", "investment", "generalEnquiries"]
+        },
+        "banking": {
+            "type": "choice",
+            "value": "We are currently looking at the available agents under Banking. Please confirm.",
+            "list": ["Yes", "No"],
+            "invalid": "Only the proposed answers are valid",
+            "waiting": 500,
+            "next": "tryAgain"
+        },
+        "investment": {
+            "type": "choice",
+            "value": "We are currently looking at the available agents under Investment. Please confirm.",
+            "list": ["Yes", "No"],
+            "invalid": "Only the proposed answers are valid",
+            "waiting": 500,
+            "next": "tryAgain"
+        },
+        "generalEnquiries": {
+            "type": "choice",
+            "value": "We are currently looking at the available agents under General Enquiries. Please confirm.",
+            "list": ["Yes", "No"],
+            "invalid": "Only the proposed answers are valid",
+            "waiting": 500,
+            "next": "tryAgain"
+        },
+        "agentFound": {
+            "type": "message",
+            "value": "We found you an agent! Please wait to be connected :)",
+            "waiting": 500,
+            "next": "establishConnection"
+        },
+        "establishConnection": {
+            "type": "external",
+            "waiting": 500,
+            "next": "connected"
+        },
+        "connected": {
+            "type": "message",
+            "value": "You have been connected! Our agent will be contacting you shortly!",
+            "waiting": 500,
+            "next": "done"
+        },
+        "tryAgain": {
+            "type": "message",
+            "value": "Sorry for the inconvenience! All our agents are currently unavailable, please try again later!",
+            "waiting": 500,
+            "next": "leaveMessage"
+        },
+        "leaveMessage": {
+            "type": "question",
+            "value": "Do leave your questions behind and we will notify you once we match you with an agent!",
+            "next": "recordMessage"
+        },
+        "recordMessage": {
+            "type": "message",
+            "value": "Your response has been recorded! Please stay connected to your Rainbow account and our agent will contact you!",
+            "next": null
+        },
+        "done": {
+            "type": "choice",
+            "value": "Are you done with your chat?",
+            "list": ["Yes", "No"],
+            "next": "aLastMessage"
+        },
+        "aLastMessage": {
+            "type": "message",
+            "value": "We look forward to serving you again!",
+            "next": null
+        }  
+    }
+}

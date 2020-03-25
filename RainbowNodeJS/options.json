@@ -1,0 +1,41 @@
+{
+    "rainbow": {
+        "host": "sandbox.openrainbow.com",
+        "mode": "xmpp"
+    },
+    "credentials": {
+        "login": "jiehan_97@hotmail.com",
+        "password": "]K9?[J6bXq-5"
+    },
+
+    "application": {
+        "appID": "ecb354505ef711ea9a6dcf004cf8c14e", 
+        "appSecret": "8qXAAAXSKPN2JirciZwpoTkkzqLX8AWx55kg55WRFSmVGrIfb2xEleTeuwp44qVB" 
+    },
+    "logs": {
+        "enableConsoleLogs": true,
+        "enableFileLogs": false,
+        "color": true,
+        "level": "debug",
+        "customLabel": "jiehan_97@hotmail.com",
+        "system-dev": {
+          "internals": true,
+          "http": true
+        }, 
+        "file": {
+            "path": "/var/tmp/chatbot/",
+            "customFileName": "R-SDK-Node-ChatBot",
+            "level": "debug",
+            "zippedArchive" : false
+        }
+    },
+    "im": {
+        "sendReadReceipt": false,
+        "messageMaxLength": 1024,
+        "sendMessageToConnectedUser": true,
+        "conversationsRetrievedFormat": "small",
+        "storeMessages": false,
+        "nbMaxConversations": 15,
+        "rateLimitPerHour": 1000
+    }
+}
