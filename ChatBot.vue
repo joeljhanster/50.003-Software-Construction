@@ -3,6 +3,12 @@
     <header class="header">
       <h3>Start Chatting</h3>
     </header>
+    <v-navigation-drawer id = "drawer" v-model = "drawer">
+        <p>Hello, {{name}}</p>
+        <v-list>
+          <v-list-item name = "toHomebutton" :to="{ name: 'Home' }">Logout</v-list-item>
+        </v-list>
+      </v-navigation-drawer>
     <div class="chatBox" id="chatBox" ref="chatBox">
       <v-card flat class="chat-box-list-container" ref="chatbox" fluid>
         <ul class="chat-box-list" style="word-break: break-all">
