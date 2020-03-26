@@ -31,6 +31,7 @@
         auto-grow
         rows="2"
         placeholder="Start typing..."
+        name = "msgbox"
         filled
         type="text"
         v-model="message"
