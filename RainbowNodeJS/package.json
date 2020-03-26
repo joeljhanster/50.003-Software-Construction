@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "jest"
   },
   "author": "",
   "license": "ISC",
@@ -31,6 +32,17 @@
     "underscore": "^1.9.2"
   },
   "devDependencies": {
-    "http-server": "^0.12.1"
+    "@shelf/jest-mongodb": "^1.1.5",
+    "http-server": "^0.12.1",
+    "jest": "^25.1.0",
+    "jest-websocket-mock": "^2.0.2",
+    "mock-socket": "^9.0.3",
+    "supertest": "^4.0.2"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": [
+      "/node_modules/"
+    ]
   }
 }

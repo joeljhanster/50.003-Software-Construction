@@ -23,7 +23,7 @@ const RainbowSDK = require("rainbow-node-sdk");
 // Define your configuration
 const options = require("./options.json");
 
-// Load the scenario
+// Load the scenario for chatbot
 const scenario = require("./scenario.json");
 
 // Function to create new Guest Account
@@ -122,8 +122,9 @@ async function clearGuest(customerId) {
         col.updateOne({"id": agentId}, {$set:{"presence": "online"}})  // change back the presence of the agent on MongoDB
         .then (() => {
             matchedDict[agentId] = "";
-            delete skill; 
+            delete skillsDict[customerId]; 
         })
+        .catch((err) => console.error(`Error: ${err}`))
     })
 }
 
@@ -152,7 +153,8 @@ nodeSDK.start().then( () => {
         createGuest(firstName, lastName).then ( (filePath) => {
             console.log(`This is the file path ${filePath}`)
             res.sendFile(filePath) 
-        });
+        })
+        .catch((err) => console.error(`Error: ${err}`));
     })
 
     // GET request for agent ID to establish connection
@@ -174,9 +176,10 @@ nodeSDK.start().then( () => {
         }
     })
 
+    // Listen to Port
     app.listen(process.env.PORT || 5000, function(){
         console.log ("Started on PORT 5000");
-    })    
+    })
 
     // CHATBOT RESPONSES
     chatbot.onMessage((tag, step, content, from, done) => {
@@ -229,6 +232,7 @@ nodeSDK.start().then( () => {
             .then(() => {
                 done();
             })
+            .catch((err) => console.error(`Error: ${err}`))
         }
 
         // Reset values stored in the respective dictionaries, conversation ended
