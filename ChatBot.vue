@@ -38,7 +38,7 @@
 <script>
 import rainbowSDK from "rainbow-web-sdk";
 import moment from "moment";
-// import axios from "axios";
+import axios from "axios";
 // import $ from "jquery";
 
 export default {
@@ -65,21 +65,20 @@ export default {
       // console.log(this.$route.params.firstname);
       let self = this;
       try {
-        // let response = await axios.get(
-        //   `https://limitless-sierra-11102.herokuapp.com/create_guest?firstName=${this.$route.params.firstname}&lastName=${this.$route.params.lastname}`
-        // );
-        // self.guestId = response.data.id;
+        let response = await axios.get(
+          `https://limitless-sierra-11102.herokuapp.com/create_guest?firstName=${this.$route.params.firstname}&lastName=${this.$route.params.lastname}`
+        );
+        self.guestId = response.data.id;
         self.email = "agent1@sutd.edu.sg";
         self.password = "P@ssword123";
-        // console.log(this.guestId);
+        console.log(this.guestId);
         console.log(this.email);
         console.log(this.password);
-        this.gettingConvo();
-        // if (this.guestId) {
-        //   this.gettingConvo();
-        // } else {
-        //   console.log("can't find id");
-        // }
+        if (this.guestId) {
+          this.gettingConvo();
+        } else {
+          console.log("can't find id");
+        }
       } catch (err) {
         console.log(err);
       }
