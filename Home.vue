@@ -4,9 +4,25 @@
       <header class="header">
         <h1>Customer Support Page</h1>
       </header>
-      <v-btn x-large color="success" dark :to="{ name: 'signup' }">sign up</v-btn>
-      <v-btn x-large color="success" dark :to="{ name: 'login' }">log in</v-btn>
-      <v-btn x-large color="success" dark :to="{ name: 'guest' }">use guest account</v-btn>
+      <v-btn
+        width="550"
+        left
+        height="180"
+        x-large
+        color="#607D8B"
+        dark
+        :to="{ name: 'signup' }"
+      >sign up</v-btn>
+      <v-btn width="550" height="180" x-large color="#78909C" dark :to="{ name: 'login' }">log in</v-btn>
+      <v-btn
+        width="550"
+        right
+        height="180"
+        x-large
+        color="#B0BEC5"
+        dark
+        :to="{ name: 'guest' }"
+      >use guest account</v-btn>
     </div>
   </v-container>
 </template>
@@ -33,9 +49,10 @@ export default {
   methods: {
     onLoaded: function() {
       //set app id
-      var applicationID = "";
+      var applicationID = "ecb354505ef711ea9a6dcf004cf8c14e";
       //set app secret
-      var applicationSecret = "";
+      var applicationSecret =
+        "8qXAAAXSKPN2JirciZwpoTkkzqLX8AWx55kg55WRFSmVGrIfb2xEleTeuwp44qVB";
       rainbowSDK.setVerboseLog(false);
       rainbowSDK
         .initialize(applicationID, applicationSecret)
@@ -68,10 +85,10 @@ a {
   color: #42b983;
 }
 .header {
-  background: #50cca3;
+  background-image: url("../assets/bank.jpg");
   color: #fff;
   text-align: center;
-  padding: 150px;
+  padding: 300px;
 }
 
 .header a {
