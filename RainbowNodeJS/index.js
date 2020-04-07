@@ -52,18 +52,7 @@ async function createGuest(firstName, lastName) {
 
 // USING RAINBOW WEB SDK (BACKEND TO SIGNAL TO FRONT END)
 // Function to establish connection between Agent and Customer
-async function establishConnection(agentId, skill, file) {
-    // sign into guest account to initiate conversation with matched agent
-    let customerId = file.id;
-    let customerEmail = file.loginEmail;
-    let customerPassword = file.password;
-    let customerName = file.displayName;
-    console.log (`This is customer ID ${customerId}`);
-    console.log (`This is customer email ${customerEmail}`);
-    console.log (`This is customer password ${customerPassword}`);
-
-    // results = await rainbowSDK.connection.signin(customerEmail, customerPassword);
-
+async function establishConnection(agentId, skill, customerName) {
     // open conversation between agent and customer
     console.log(`This is the agent's Id: ${agentId}`);
     let agentContact = await nodeSDK.contacts.getContactById(agentId, true);
@@ -254,8 +243,7 @@ nodeSDK.start().then( () => {
         // Establish connection between agent and customer, open one-to-one conversation
         else if (tag === "support" && step === "establishConnection") {
             console.log("Executing external");
-
-            let file = require(`./${from.id}.json`);   
+   
             let agentId = _.invert(matchedDict)[from.id]
             let skill = skillsDict[from.id]
 
@@ -264,7 +252,7 @@ nodeSDK.start().then( () => {
                 col.updateOne({"id": agentId}, {$inc:{"chatsReceived": 1}})
             })
  
-            establishConnection(agentId, skillsDict[from.id], file)
+            establishConnection(agentId, skillsDict[from.id], from.displayName)
             .then(() => {
                 done();
             })

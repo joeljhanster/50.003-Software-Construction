@@ -53,7 +53,7 @@
             "type": "message",
             "value": "You have been connected! Our agent will be contacting you shortly!",
             "waiting": 500,
-            "next": null
+            "next": "aLastMessage"
         },
         "tryAgain": {
             "type": "message",
