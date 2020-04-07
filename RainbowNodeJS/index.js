@@ -45,7 +45,7 @@ async function createGuest(firstName, lastName) {
     // chatbot to automatically send message to guest user
     let guestContact = await nodeSDK.contacts.getContactById(guestId, true);
     let conversation = await nodeSDK.conversations.openConversationForContact(guestContact);
-    await nodeSDK.im.sendMessageToConversation(conversation, `Hello, I am the customer support bot for ABC Bank. If you require any assistance, please type #support :)`);
+    await nodeSDK.im.sendMessageToConversation(conversation, `Hello, I am the customer support bot for ABC Bank. If you require any assistance, please type #support :)\nTo check for agents' availability, please type #availability :)`);
 
     return filePath
 }
@@ -128,6 +128,37 @@ async function clearGuest(customerId) {
             delete skillsDict[customerId]; 
         })
         .catch((err) => console.error(`Error: ${err}`))
+    })
+}
+
+// Function to list the number of available agents in each skill category
+async function availability(customerId, skill, content) {
+
+    // Send customer a message indicating the number of agents available
+    let customerContact = await nodeSDK.contacts.getContactById(customerId, true);
+    console.log("Got customer contact")
+    let conversation = await nodeSDK.conversations.openConversationForContact(customerContact);
+    console.log("Got conversation")
+    var totalCount;
+    var availableCount;
+
+    // Count the number of available agents
+    MongoClient.connect(url, {useUnifiedTopology: true}, async function(err, client) {
+        const col = client.db(dbName).collection(skill);
+
+        await col.countDocuments(function (err, count) {
+            if (!err) {
+                console.log("Mongo Total Count is: " + count)
+                totalCount = count;
+            }
+        })
+        await col.countDocuments({"presence": "online"}, function (err, count) {
+            if (!err) {
+                console.log("Mongo Available Count is: " + count)
+                availableCount = count;
+                nodeSDK.im.sendMessageToConversation(conversation, `There are ${availableCount}/${totalCount} agents available in the ${content} category`);
+            }
+        })
     })
 }
 
@@ -262,6 +293,24 @@ nodeSDK.start().then( () => {
         }
         else {
             done();
+        }
+
+        // Check number of available agents in each category
+        if (tag === "availability" && step === "availableMessage") {
+            var skill;
+            if (content === "Banking") {
+                skill = "banking"
+            }
+            if (content === "Investment") {
+                skill = "investment"
+            }
+            if (content === "General Enquiries") {
+                skill = "generalEnquiries"
+            }
+            availability(from.id, skill, content)
+            .then(()=> {
+                done();
+            })
         }
     }, this);
 

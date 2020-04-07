@@ -82,5 +82,14 @@
             "value": "We look forward to serving you again!",
             "next": null
         }  
+    },
+    
+    "availability": {
+        "availableMessage": {
+            "type": "choice",
+            "value": "Which category would you like to view the number of available agents?",
+            "list": ["Banking", "Investment", "General Enquiries"],
+            "next": null
+        }
     }
 }
