@@ -197,7 +197,7 @@ export default {
                             );
                             document.addEventListener(
                                 rainbowSDK.im.RAINBOW_ONNEWIMMESSAGERECEIVED,
-                                this.receive
+                                this.receive1
                             );
                             document.addEventListener(
                                 rainbowSDK.im.RAINBOW_ONNEWIMRECEIPTRECEIVED,
@@ -276,6 +276,15 @@ export default {
             this.messages.push({
                 text: event.detail.message.data,
                 author: "Bank",
+                time: moment().format("h:mm a")
+            });
+        },
+        receive1: function(event) {
+            console.log(event.detail.message.data);
+            console.log(event.detail.message.side);
+            this.messages.push({
+                text: event.detail.message.data,
+                author: "Agent",
                 time: moment().format("h:mm a")
             });
         },
