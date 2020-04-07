@@ -53,7 +53,7 @@
             "type": "message",
             "value": "You have been connected! Our agent will be contacting you shortly!",
             "waiting": 500,
-            "next": "done"
+            "next": "aLastMessage"
         },
         "tryAgain": {
             "type": "message",
@@ -71,25 +71,26 @@
             "value": "Your response has been recorded! Please stay connected to your Rainbow account and our agent will contact you!",
             "next": null
         },
-        "done": {
-            "type": "choice",
-            "value": "Are you done with your chat?",
-            "list": ["Yes", "No"],
-            "next": "aLastMessage"
-        },
         "aLastMessage": {
             "type": "message",
             "value": "We look forward to serving you again!",
             "next": null
         }  
     },
-    
+
     "availability": {
         "availableMessage": {
             "type": "choice",
             "value": "Which category would you like to view the number of available agents?",
             "list": ["Banking", "Investment", "General Enquiries"],
             "next": null
+        }
+    },
+
+    "done": {
+        "doneMessage": {
+            "type": "message",
+            "value": "We have made you available again! Thank you!"
         }
     }
 }
