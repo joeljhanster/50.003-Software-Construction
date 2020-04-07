@@ -15,6 +15,7 @@ const url = 'mongodb://heroku_1whs0tq1:kq8e627o53cv9trrtd6q07n00i@ds119728.mlab.
 const dbName = 'heroku_1whs0tq1';           // Database Name
 var matchedDict = {};                       // Initialize dictionary to check if agent is attached to a customer
 var skillsDict = {};                        // Initialize dictionary to attach customer to a requested skill
+var connChecked = {};                       // Initialize dictionary to check if connection has been checked where each value is Boolean
 
 // Load the SDK
 const ChatBot = require("rainbow-chatbot");
@@ -30,10 +31,12 @@ const scenario = require("./scenario.json");
 async function createGuest(firstName, lastName) {
     // create the guest account
     let language = "en-US";
-    let ttl = 600;  // active for 5min
-    //let ttl = 86400; // active for a day
+    let ttl = 86400; // active for a day
     let guest = await nodeSDK.admin.createGuestUser(firstName, lastName, language, ttl);
     let guestId = guest.id;
+
+    // initialize boolean dictionary
+    connChecked[guestId] = false;
 
     // store guests' details into JSON file
     let filePath = path.join(__dirname,`${guestId}.json`)
@@ -100,7 +103,7 @@ async function checkAgents (skill, customerId, count) {
                     matchedDict[agentId] = customerId;
                     col.updateOne({"id": agentId}, {$set:{"presence": "busy"}});    // temporarily change agent's presence status
                 }
-            } else if (count <= 100) {
+            } else if (count <= 30) {
                 console.log('No document matches the provided query.');
                 count = count + 1;
                 checkAgents (skill, customerId, count);
@@ -163,17 +166,24 @@ nodeSDK.start().then( () => {
         console.log("This is the query: " + req.query);
 
         var customerId = req.query.id;
-        // Check if customer is assigned to an agent
-        if (customerId in _.invert(matchedDict)) {
-            let dict = {}
-            dict["agentId"] = (_.invert(matchedDict)[customerId]);
-            dict["skill"] = skillsDict[customerId];
-            console.log(dict)
-            res.send(dict)
+        let dict = {};
+        dict["agentId"] = "";
+        dict["skill"] = "";
+        dict["message"] = "Not matched with Agent";
+        dict["connection"] = false;
+
+        console.log("Connection checked: " + connChecked[customerId]);
+        // check if attempt to establish connection is done
+        if (connChecked[customerId] == true) {
+            // check if customer is assigned to an agent
+            if (customerId in _.invert(matchedDict) && customerId != "") {
+                dict["agentId"] = (_.invert(matchedDict)[customerId]);
+                dict["skill"] = skillsDict[customerId];
+                dict["message"] = `Customer with Id ${customerId} matched with Agent`;
+            }
+            dict["connection"] = true;
         }
-        else {
-            res.send("Not matched with Agent")
-        }
+        res.send(dict);
     })
 
     // Listen to Port
@@ -196,6 +206,9 @@ nodeSDK.start().then( () => {
                 skill = "generalEnquiries"
             }
             skillsDict[from.id] = skill;
+            connChecked[from.id] = false;
+
+            // Checks whether customer is mapped to an agent
             checkAgents(skillsDict[from.id], from.id, 0);
             done();
         } 
@@ -205,11 +218,13 @@ nodeSDK.start().then( () => {
             let agentId = (_.invert(matchedDict))[from.id]
             // Check that the customer is correctly matched to an agent
             if (content === "Yes" && Object.values(matchedDict).indexOf(from.id) > -1) {
+                connChecked[from.id] = true;
                 done ('agentFound');
             } else if (content === "No") {
                 clearGuest(from.id)
                 done ('selectType');
             } else {
+                connChecked[from.id] = true;
                 clearGuest(from.id)
                 done();
             }
@@ -234,10 +249,11 @@ nodeSDK.start().then( () => {
             })
             .catch((err) => console.error(`Error: ${err}`))
         }
-
+        // TODO: NEEDS A WAY TO RESET VALUES WITHOUT CUSTOMERS PRESSING DONE
         // Reset values stored in the respective dictionaries, conversation ended
         else if (tag === "support" && step === "done"){
             if (content === "Yes") {
+                connChecked[from.id] = false;
                 clearGuest(from.id)
                 done();
             } else if (content === "No") {
