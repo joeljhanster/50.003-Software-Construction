@@ -45,7 +45,7 @@ async function createGuest(firstName, lastName) {
     // chatbot to automatically send message to guest user
     let guestContact = await nodeSDK.contacts.getContactById(guestId, true);
     let conversation = await nodeSDK.conversations.openConversationForContact(guestContact);
-    await nodeSDK.im.sendMessageToConversation(conversation, `Hello, I am the customer support bot for ABC Bank. If you require any assistance, please type #support :)\nTo check for agents' availability, please type #availability :)`);
+    await nodeSDK.im.sendMessageToConversation(conversation, `Hello, I am the customer support bot for ABC Bank. If you require any assistance, please type #support.\nTo check for agents' availability, please type #availability.`);
 
     return filePath
 }
@@ -75,50 +75,40 @@ async function establishConnection(agentId, skill, file) {
 async function checkAgents (skill, customerId, count) {
     MongoClient.connect(url, {useUnifiedTopology: true}, async function(err, client) {
         const col = client.db(dbName).collection(skill);
-        
+
         // check if any available agents
-        // doc = await col.find({"presence": "online"}).sort({"chatsReceived":1}).limit(1).toArray(result);
-        // col.find({"presence:": "online"}, {sort: {chatsReceived: 1}, limit: 1}, function )
-        // console.log(doc);"
-        // .then((result) => {
-        //     if (result) {
-        //         var agentId = result["id"];
-        //         console.log(agentId);
-        //         if (matchedDict[agentId] == "") {
-        //             console.log("Matching agent to customer");
-        //             matchedDict[agentId] == customerId;
-        //         }
-        //     } else {
-        //         console.log('No document matches the provided query.');
-        //     }
-        // })
-        // .catch((err) => console.error(`Failed to find document: $(err)`))
-        
-        // check if any available agents
-        col.findOne({"presence": "online"})
-        .then((result) => {
-            if (result) {
-                var agentId = result["id"];
-                if (matchedDict[agentId] == "") {
-                    matchedDict[agentId] = customerId;
-                    col.updateOne({"id": agentId}, {$set:{"presence": "busy"}});    // temporarily change agent's presence status
-                }
-            } else if (count <= 30) {
-                console.log('No document matches the provided query.');
-                count = count + 1;
-                checkAgents (skill, customerId, count);
+        result = await col.find({"presence": "online"}, {sort: {"chatsReceived": 1}, limit: 1}).toArray()
+        console.log(result.length);
+        if (result.length == 1) {
+            console.log(result[0]["id"]);
+            var agentId = result[0]["id"];
+            if (matchedDict[agentId] == "") {
+                matchedDict[agentId] = customerId;
+                col.updateOne({"id": agentId}, {$set:{"presence": "busy"}});    // temporarily change agent's presence status
             }
-        })
-        .catch((err) => console.error(`Failed to find document: ${err}`))
-        
+        } else if (count <= 30) {
+            console.log('No document matches the provided query.');
+            count = count + 1;
+            checkAgents (skill, customerId, count);
+        }
     });
 }
 
-// Function to clear guest
-async function clearGuest(customerId) {
+// Function to clear guest data
+async function clearGuest(id, skill, agent) {
+    let agentId;
+    let customerId;
 
-    let agentId = _.invert(matchedDict)[customerId]
-    let skill = skillsDict[customerId]
+    if (agent) {
+        agentId = id;
+        customerId = matchedDict[id];
+    }
+    else {
+        customerId = id;
+        agentId = _.invert(matchedDict)[id];
+    }
+    
+    console.log("Skill is: " + skill);
 
     MongoClient.connect(url, {useUnifiedTopology: true}, async function(err, client) {
         const col = client.db(dbName).collection(skill);
@@ -252,11 +242,11 @@ nodeSDK.start().then( () => {
                 connChecked[from.id] = true;
                 done ('agentFound');
             } else if (content === "No") {
-                clearGuest(from.id)
+                clearGuest(from.id, step, false)
                 done ('selectType');
             } else {
                 connChecked[from.id] = true;
-                clearGuest(from.id)
+                clearGuest(from.id, step, false)
                 done();
             }
         } 
@@ -282,17 +272,24 @@ nodeSDK.start().then( () => {
         }
         // TODO: NEEDS A WAY TO RESET VALUES WITHOUT CUSTOMERS PRESSING DONE
         // Reset values stored in the respective dictionaries, conversation ended
-        else if (tag === "support" && step === "done"){
-            if (content === "Yes") {
-                connChecked[from.id] = false;
-                clearGuest(from.id)
-                done();
-            } else if (content === "No") {
-                done("done");
-            }
-        }
+        // else if (tag === "support" && step === "done"){
+        //     if (content === "Yes") {
+        //         connChecked[from.id] = false;
+        //         clearGuest(from.id, skillsDict[from.id], false);
+        //         done();
+        //     } else if (content === "No") {
+        //         done("done");
+        //     }
+        // }
         else {
             done();
+        }
+
+        // Agent to confirm call ended and clears data
+        if (tag === "done") {
+            connChecked[from.id] = false;
+            clearGuest(from.id, skillsDict[matchedDict[from.id]], true);
+            console.log("Guest data cleared!")
         }
 
         // Check number of available agents in each category
