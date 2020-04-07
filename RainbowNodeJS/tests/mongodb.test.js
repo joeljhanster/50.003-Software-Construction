@@ -56,6 +56,11 @@ describe('mongodb test', () => {
     const doc = await bank_col.findOne({"id": "5e5ff0c9d8084c29e64eb392"});
     const presence = doc.presence;
     expect(presence).toEqual("busy");
+
+    await bank_col.updateOne({"id": "5e5ff0c9d8084c29e64eb392"}, {$set:{"presence": "offline"}});
+    const newdoc = await bank_col.findOne({"id": "5e5ff0c9d8084c29e64eb392"});
+    const newpresence = newdoc.presence;
+    expect(newpresence).toEqual("offline");
   })
 
   it("increase and decrease agent's chat count", async () => {
