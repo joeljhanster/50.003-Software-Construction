@@ -1,5 +1,3 @@
-// const app = require('../start') // Link to your server file
-// const supertest = require('supertest')
 const axios = require('axios')
 
 describe('Express API endpoints test', () => {
