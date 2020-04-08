@@ -13,7 +13,7 @@ describe('Express API endpoints test', () => {
         expect(response.data).toHaveProperty('id')
         expect(response.data).toHaveProperty('password')
         done()
-      });
+      }, 30000);
 
     it('Test /establish_connection endpoint', async done => {
         let id;
@@ -26,5 +26,5 @@ describe('Express API endpoints test', () => {
         expect(response.data).toHaveProperty("message")
         expect(response.data).toHaveProperty("connection")
         done()
-    })
+    }, 30000)
 })
