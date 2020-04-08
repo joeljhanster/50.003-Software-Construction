@@ -1,4 +1,4 @@
-package selenium.RobustnessTests.LoginInjection;
+package selenium.RobustnessTests;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -84,7 +84,7 @@ public class LoginFuzz {
         String path = "C:/Users/returnofthedohreimi/Desktop/programming/ChromeDriver/chromedriver_win32/chromedriver.exe";
         System.setProperty("webdriver.chrome.driver", path);      
         WebDriver driver = new ChromeDriver();
-        driver.get("http://localhost:8080/#/");
+        driver.get("http://localhost:8080/#/login");
 
         Thread.sleep(3000);
         WebElement username = driver.findElement(By.name("login"));
@@ -93,7 +93,7 @@ public class LoginFuzz {
         username.sendKeys(myUserName);
         username.sendKeys(myPassword);
 
-        Thread.sleep(6000);
+        Thread.sleep(3000);
 
         WebElement LoginButton = driver.findElement(By.name("tochatbotbtn"));
         LoginButton.click();
@@ -107,13 +107,13 @@ public class LoginFuzz {
     @Test
     public void GenerateCredentials() throws InterruptedException{
         for (int i = 0; i < 100; i++){
-            String myUserName = new UsernameFuzz().usernamefuzz(); 
-            String myPassword = new UsernameFuzz().passwordfuzz(); 
+            String myUserName = new LoginFuzz().usernamefuzz(); 
+            String myPassword = new LoginFuzz().passwordfuzz(); 
             InjectionTest(myUserName, myPassword);
         }
     }
 
     public static void main(String[] args) throws InterruptedException{
-        new UsernameFuzz().GenerateCredentials();
+        new LoginFuzz().GenerateCredentials();
     }
 }
