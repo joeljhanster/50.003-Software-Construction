@@ -218,106 +218,18 @@ export default {
     },
     call() {
       // this.$alert("Do you want to call your agent?");
-      this.$confirm("Do you want to call the agent?").then(() => {
+      this.$confirm(
+        "Please only click this button after being connecting to an agent. Do you want to call the agent?"
+      ).then(() => {
         //do something...
         this.callingAgent();
       });
     },
     callingAgent: async function() {
-      console.log(this.agentId);
-      let self = this;
-      let response = await axios.get(
-        `https://limitless-sierra-11102.herokuapp.com/create_guest?firstName=${this.$route.params.firstname}&lastName=${this.$route.params.lastname}`
-      );
-      self.guestId = response.data.id;
-      console.log(self.guestId);
-      let response1 = await axios.get(
-        `https://limitless-sierra-11102.herokuapp.com/establish_connection?id=${this.guestId}`
-      );
-      console.log(response1.data.connection);
-      self.agentId = response1.data.agentId;
-      console.log(self.agentId);
-      this.checkCall();
-      this.startCall();
-      // this.$router.push({
-      //     name: "call",
-      //     params: { agentId: self.agentId }
-      // });
-    },
-    checkCall: function() {
-      if (rainbowSDK.webRTC.canMakeAudioVideoCall()) {
-        console.log("Browser supports calls");
-      } else {
-        console.log("Browser does not support calls");
-      }
-      navigator.mediaDevices
-        .getUserMedia({ audio: true })
-        .then(function(stream) {
-          stream.getTracks().forEach(function(track) {
-            track.stop();
-          });
-          navigator.mediaDevices
-            .enumerateDevices()
-            .then(function(devices) {
-              devices.forEach(function(device) {
-                if (device.deviceId === "default") {
-                  console.log(device);
-                  console.log(device.label, "is available");
-                }
-              });
-            })
-            .catch(function(error) {
-              console.log(error);
-            });
-          rainbowSDK.webRTC.useMicrophone("default");
-          rainbowSDK.webRTC.useSpeaker("default");
-        })
-        .catch(function(error) {
-          console.log(error);
-        });
-    },
-    startCall: async function() {
-      let self = this;
-      try {
-        console.log(this.agentId);
-        let contact = await rainbowSDK.contacts.searchById(this.agentId);
-        var res = rainbowSDK.webRTC.callInAudio(contact); //start to call the contact with available agent
-        if (res.label === "OK") {
-          console.log("calling");
-        }
-        self.start = true;
-        document.addEventListener(
-          rainbowSDK.webRTC.RAINBOW_ONWEBRTCCALLSTATECHANGED,
-          self.onWebRTCCallChanged
-        );
-      } catch (err) {
-        console.log(err);
-      }
-    },
-    onWebRTCCallChanged: async function(event) {
-      let self = this;
-      self.call = event.detail;
-      console.log("OnWebRTCCallChanged event", event.detail.status);
-      if (event.detail.status.value === "Unknown") {
-        document.removeEventListener(
-          rainbowSDK.webRTC.RAINBOW_ONWEBRTCCALLSTATECHANGED,
-          self.onWebRTCCallChanged
-        );
-        if (self.exit) {
-          await self.$router.push({ name: "chatbot" });
-        }
-      }
-    },
-    endCall: async function() {
-      let self = this;
-      self.exit = true;
-      await rainbowSDK.webRTC.release(self.call);
-      console.log("Session Ended");
-    },
-    moveToChat: async function() {
-      console.log("moving to chat");
-      await rainbowSDK.webRTC.release(this.call);
-      await this.$router.push({ name: "chatbot" });
+      console.log(this.$store.state.agentId);
+      this.$router.push({
+        name: "Call"
+      });
     },
     sendMessage() {
       let self = this;
