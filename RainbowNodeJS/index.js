@@ -57,7 +57,7 @@ async function establishConnection(agentId, skill, customerName) {
     console.log(`This is the agent's Id: ${agentId}`);
     let agentContact = await nodeSDK.contacts.getContactById(agentId, true);
     let conversation = await nodeSDK.conversations.openConversationForContact(agentContact);
-    await nodeSDK.im.sendMessageToConversation(conversation, `Hello, I am ${customerName}. I need your help in ${skill}!`);
+    await nodeSDK.im.sendMessageToConversation(conversation, `You have been assigned to ${customerName}! He needs your help in ${skill}!`);
 }
 
 // Function to check for available agents via MongoDB
@@ -83,8 +83,8 @@ async function checkAgents (skill, customerId, count) {
     });
 }
 
-// Function to clear guest data
-async function clearGuest(id, skill, agent) {
+// Function to clear data
+async function clearData(id, skill, agent) {
     let agentId;
     let customerId;
 
@@ -295,17 +295,16 @@ nodeSDK.start().then( () => {
         
         // Customer to confirm type of support
         else if (tag === "support" && (step === "banking" || step === "investment" || step === "generalEnquiries")) {
-            let agentId = (_.invert(matchedDict))[from.id]
             // Check that the customer is correctly matched to an agent
             if (content === "Yes" && Object.values(matchedDict).indexOf(from.id) > -1) {
                 connChecked[from.id] = true;
                 done ('agentFound');
             } else if (content === "No") {
-                clearGuest(from.id, step, false)
+                clearData(from.id, step, false)
                 done ('selectType');
             } else {
                 connChecked[from.id] = true;
-                clearGuest(from.id, step, false)
+                clearData(from.id, step, false)
                 done();
             }
         } 
@@ -328,17 +327,6 @@ nodeSDK.start().then( () => {
             })
             .catch((err) => console.error(`Error: ${err}`))
         }
-        // TODO: NEEDS A WAY TO RESET VALUES WITHOUT CUSTOMERS PRESSING DONE
-        // Reset values stored in the respective dictionaries, conversation ended
-        // else if (tag === "support" && step === "done"){
-        //     if (content === "Yes") {
-        //         connChecked[from.id] = false;
-        //         clearGuest(from.id, skillsDict[from.id], false);
-        //         done();
-        //     } else if (content === "No") {
-        //         done("done");
-        //     }
-        // }
         else {
             done();
         }
@@ -346,7 +334,7 @@ nodeSDK.start().then( () => {
         // Agent to confirm call ended and clears data
         if (tag === "done") {
             connChecked[from.id] = false;
-            clearGuest(from.id, skillsDict[matchedDict[from.id]], true);
+            clearData(from.id, skillsDict[matchedDict[from.id]], true);
             console.log("Guest data cleared!")
         }
 
@@ -366,6 +354,29 @@ nodeSDK.start().then( () => {
             .then(()=> {
                 done();
             })
+        }
+
+        // Reset and clear agents' availability
+        if (tag === "reset" && step === "confirmChoice") {
+            var isDict;
+            if (from.id in matchedDict) {
+                console.log(matchedDict[from.id]);
+                isDict = true;
+            } else {
+                isDict = false;
+            }
+            
+            console.log("Is id in matchedDict? " + isDict);
+            if (content === "Yes" && from.id in matchedDict) {
+                for (const agentId in matchedDict) {
+                    var skill = skillsDict[matchedDict[agentId]];
+                    if (skill == "banking" || skill == "generalEnquiries" || skill == "investment") {
+                        clearData(agentId, skillsDict[matchedDict[agentId]], true);
+                    }
+                }
+                console.log("All matched data cleared!");
+            }
+            done();
         }
     }, this);
 
