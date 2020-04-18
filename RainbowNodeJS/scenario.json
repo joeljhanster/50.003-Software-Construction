@@ -83,6 +83,8 @@
             "type": "choice",
             "value": "Which category would you like to view the number of available agents?",
             "list": ["Banking", "Investment", "General Enquiries"],
+            "invalid": "Only the proposed answers are valid",
+            "waiting": 500,
             "next": null
         }
     },
@@ -91,6 +93,22 @@
         "doneMessage": {
             "type": "message",
             "value": "We have made you available again! Thank you!"
+        }
+    },
+
+    "reset": {
+        "confirmChoice": {
+            "type": "choice",
+            "value": "Are you sure you want to reset agents' availability?",
+            "list": ["Yes", "No"],
+            "invalid": "Only the proposed answers are valid",
+            "waiting": 5000,
+            "next": ["resetMessage", null]
+        },
+        "resetMessage": {
+            "type": "message",
+            "value": "Agents' availability has been reset.",
+            "next": null
         }
     }
 }
