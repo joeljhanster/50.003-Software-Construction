@@ -110,6 +110,46 @@ async function clearGuest(id, skill, agent) {
     })
 }
 
+// Function to list number of available agents in each skill category
+async function available(skill, total) {
+    
+    // Count the number of documents in each collection
+    return new Promise((res, rej) => {
+        MongoClient.connect(url, {useUnifiedTopology: true}, async function(err, client) {
+            if (err) {
+                rej(err);
+            }
+            // Search through collection
+            const col = client.db(dbName).collection(skill);
+            
+            // For total number of agents
+            if (total) {
+                await col.countDocuments(function (err, count) {
+                    if (!err) {
+                        console.log(`Mongo Total Count for ${skill} is: ${count}`);
+                        res(count);
+                    }
+                    else {
+                        rej(err);
+                    }
+                })
+            }
+            // For total number of available agents
+            else {
+                await col.countDocuments({"presence": "online"}, function (err, count) {
+                    if (!err) {
+                        console.log(`Mongo Available Count for ${skill} is: ${count}`);
+                        res(count);
+                    }
+                    else {
+                        rej(err);
+                    }
+                })
+            }
+        })
+    }) 
+}
+
 // Function to list the number of available agents in each skill category
 async function availability(customerId, skill, content) {
 
@@ -194,6 +234,36 @@ nodeSDK.start().then( () => {
             dict["connection"] = true;
         }
         res.send(dict);
+    })
+
+    // GET request to update availability of all skill categories
+    app.get('/availability', function(req,res) {
+        res.setHeader('Access-Control-Allow-Origin', '*')
+
+        // Initialize dictionary to be sent as response
+        var dict = {'totalBank': 0, 'totalInvest': 0, 'totalGE': 0, 'availBank': 0, 'availInvest': 0, 'availGE': 0};
+        
+        // Sequential events to count the number of documents (aka availability) for each collection before sending response
+        available('banking', true).then(count => {  // Total agents for banking
+            dict['totalBank'] = count;
+            available('banking', false).then(count => { // Available agents for banking
+                dict['availBank'] = count;
+                available('investment', true).then(count => {   // Total agents for investment
+                    dict['totalInvest'] = count;
+                    available('investment', false).then(count => {  // Available agents for investment
+                        dict['availInvest'] = count;
+                        available('generalEnquiries', true).then(count => { // Total agents for general enquiries
+                            dict['totalGE'] = count;
+                            available('generalEnquiries', false).then(count => {    // Available agents for general enquiries
+                                dict['availGE'] = count;
+                            }).then( () => {
+                                res.send(dict); // Send response
+                            })
+                        })
+                    })
+                })
+            })
+        })
     })
 
     // Listen to Port
@@ -324,7 +394,6 @@ nodeSDK.events.on("rainbow_onready", () => {
         dict["displayName"] = contact["_displayName"];
         dict["loginEmail"] = contact["loginEmail"];
         dict["presence"] = contact["presence"];
-        dict["callsReceived"] = 0;
         dict["chatsReceived"] = 0;
 
         // Initialize dictionary that checks if agent is attached to a customer
