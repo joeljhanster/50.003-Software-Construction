@@ -60,20 +60,28 @@ async function establishConnection(agentId, skill, customerName) {
     await nodeSDK.im.sendMessageToConversation(conversation, `You have been assigned to ${customerName}! He needs your help in ${skill}!`);
 }
 
-// Function to check for available agents via MongoDB
+// Function to check for available agents via MongoDB (Main routing engine)
 async function checkAgents (skill, customerId, count) {
     MongoClient.connect(url, {useUnifiedTopology: true}, async function(err, client) {
         const col = client.db(dbName).collection(skill);
+        const bankCol = client.db(dbName).collection("banking");
+        const investmentCol = client.db(dbName).collection("investment");
+        const genEnqCol = client.db(dbName).collection("generalEnquiries");
 
         // check if any available agents
-        result = await col.find({"presence": "online"}, {sort: {"chatsReceived": 1}, limit: 1}).toArray()
+        // result = await col.find({"presence": "online"}, {sort: {"chatsReceived": 1}, limit: 1}).toArray()
+        result = await col.find({"presence": "online"}, {sort: {"chatsReceived": 1}, limit: 10}).toArray()
         console.log(result.length);
-        if (result.length == 1) {
-            console.log(result[0]["id"]);
-            var agentId = result[0]["id"];
+        if (result.length >= 1) {
+            let randNum = Math.floor(Math.random() * Math.floor(result.length));
+            console.log(result[randNum]["id"]);
+            var agentId = result[randNum]["id"];
             if (matchedDict[agentId] == "") {
                 matchedDict[agentId] = customerId;
-                col.updateOne({"id": agentId}, {$set:{"presence": "busy"}});    // temporarily change agent's presence status
+                bankCol.updateOne({"id": agentId}, {$set:{"presence": "busy"}});    // temporarily change agent's presence status
+                investmentCol.updateOne({"id": agentId}, {$set:{"presence": "busy"}});    // temporarily change agent's presence status
+                genEnqCol.updateOne({"id": agentId}, {$set:{"presence": "busy"}});    // temporarily change agent's presence status
+                // col.updateOne({"id": agentId}, {$set:{"presence": "busy"}});    // temporarily change agent's presence status
             }
         } else if (count <= 30) {
             console.log('No document matches the provided query.');
@@ -100,11 +108,39 @@ async function clearData(id, skill, agent) {
     console.log("Skill is: " + skill);
 
     MongoClient.connect(url, {useUnifiedTopology: true}, async function(err, client) {
-        const col = client.db(dbName).collection(skill);
-        col.updateOne({"id": agentId}, {$set:{"presence": "online"}})  // change back the presence of the agent on MongoDB
+        // const col = client.db(dbName).collection(skill);
+        const bankCol = client.db(dbName).collection("banking");
+        const investmentCol = client.db(dbName).collection("investment");
+        const genEnqCol = client.db(dbName).collection("generalEnquiries");
+        
+        bankCol.updateOne({"id": agentId}, {$set:{"presence": "online"}})  // change back the presence of the agent on MongoDB
         .then (() => {
-            matchedDict[agentId] = "";
-            delete skillsDict[customerId]; 
+            investmentCol.updateOne({"id": agentId}, {$set:{"presence": "online"}})  // change back the presence of the agent on MongoDB
+            .then(() => {
+                genEnqCol.updateOne({"id": agentId}, {$set:{"presence": "online"}})  // change back the presence of the agent on MongoDB
+                .then(() => {
+                    matchedDict[agentId] = "";
+                    delete skillsDict[customerId]; 
+                })
+            })
+        })
+        .catch((err) => console.error(`Error: ${err}`))
+    })
+}
+
+async function reset() {
+    MongoClient.connect(url, {useUnifiedTopology: true}, async function(err, client) {
+        // const col = client.db(dbName).collection(skill);
+        const bankCol = client.db(dbName).collection("banking");
+        const investmentCol = client.db(dbName).collection("investment");
+        const genEnqCol = client.db(dbName).collection("generalEnquiries");
+        
+        bankCol.updateMany({}, {$set:{"presence": "online"}})  // change back the presence of the agent on MongoDB
+        .then (() => {
+            investmentCol.updateMany({}, {$set:{"presence": "online"}})  // change back the presence of the agent on MongoDB
+            .then(() => {
+                genEnqCol.updateMany({}, {$set:{"presence": "online"}})  // change back the presence of the agent on MongoDB
+            })
         })
         .catch((err) => console.error(`Error: ${err}`))
     })
@@ -266,6 +302,18 @@ nodeSDK.start().then( () => {
         })
     })
 
+    // GET request to get matched dict
+    app.get('/matched', function(req,res) {
+        res.setHeader('Access-Control-Allow-Origin', '*')
+        let dict = {'count': 0}
+        for (id in matchedDict) {
+            if (matchedDict[id] != "") {
+                dict['count']++
+            }
+        }
+        res.send(dict);
+    })
+
     // Listen to Port
     app.listen(process.env.PORT || 5000, function(){
         console.log ("Started on PORT 5000");
@@ -317,11 +365,15 @@ nodeSDK.start().then( () => {
             let skill = skillsDict[from.id]
 
             MongoClient.connect(url, {useUnifiedTopology: true}, async function(err, client) {
-                const col = client.db(dbName).collection(skill);
-                col.updateOne({"id": agentId}, {$inc:{"chatsReceived": 1}})
+                const bankCol = client.db(dbName).collection("banking");
+                const investmentCol = client.db(dbName).collection("investment");
+                const genEnqCol = client.db(dbName).collection("generalEnquiries");
+                bankCol.updateOne({"id": agentId}, {$inc:{"chatsReceived": 1}})
+                investmentCol.updateOne({"id": agentId}, {$inc:{"chatsReceived": 1}})
+                genEnqCol.updateOne({"id": agentId}, {$inc:{"chatsReceived": 1}})
             })
  
-            establishConnection(agentId, skillsDict[from.id], from.displayName)
+            establishConnection(agentId, skill, from.displayName)
             .then(() => {
                 done();
             })
@@ -373,6 +425,7 @@ nodeSDK.start().then( () => {
                     if (skill == "banking" || skill == "generalEnquiries" || skill == "investment") {
                         clearData(agentId, skillsDict[matchedDict[agentId]], true);
                     }
+                    reset();
                 }
                 console.log("All matched data cleared!");
             }
@@ -409,8 +462,10 @@ nodeSDK.events.on("rainbow_onready", () => {
 
         // Initialize dictionary that checks if agent is attached to a customer
         matchedDict[contact["id"]] = "";
+        // var agentsaccepted = ['agent1', 'agent2', 'agent3', 'agent4', 'agent5', 'agent6', 'agent7', 'agent8', 'agent9', 'agent10', 'agent11', 'agent12', 'agent13', 'agent14', 'agent15', 'agent16', 'agent17', 'agent18', 'agent19', 'agent20', 'agent21', 'agent22', 'agent23', 'agent24', 'agent25', 'agent26', 'agent27', 'agent28', 'agent54', 'agent55', 'agent56', 'agent57', 'agent58', 'agent59', 'agent60', 'agent61', 'agent62', 'agent63', 'agent64', 'agent65', 'agent66', 'agent67', 'agent68', 'agent69', 'agent70', 'agent71', 'agent72', 'agent73', 'agent74', 'agent75', 'agent76', 'agent102', 'agent103', 'agent104', 'agent105', 'agent106', 'agent107', 'agent108', 'agent109', 'agent110', 'agent111', 'agent112', 'agent113', 'agent114', 'agent115', 'agent116', 'agent117', 'agent118', 'agent119', 'agent120', 'agent121', 'agent122', 'agent123', 'agent124', 'agent125'];
 
         // Check if contact is an agent
+        // if (contact["jobTitle"] == "Agent" & agentsaccepted.includes(contact["nickName"])) {
         if (contact["jobTitle"] == "Agent") {
 
             // Add agent's information into their respective categories

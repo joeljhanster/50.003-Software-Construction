@@ -26,5 +26,24 @@ describe('Express API endpoints test', () => {
         expect(response.data).toHaveProperty("message")
         expect(response.data).toHaveProperty("connection")
         done()
-    }, 30000)
+    }, 30000);
+
+    it('Test /availability endpoint', async done => {
+        let response = await axios.get("https://limitless-sierra-11102.herokuapp.com/availability")
+        expect(response.status).toBe(200)
+        expect(response.data).toHaveProperty("totalBank")
+        expect(response.data).toHaveProperty("totalInvest")
+        expect(response.data).toHaveProperty("totalGE")
+        expect(response.data).toHaveProperty("availBank")
+        expect(response.data).toHaveProperty("availInvest")
+        expect(response.data).toHaveProperty("availGE")
+        done()
+    }, 30000);
+
+    it('Test /matched endpoint', async done => {
+        let response = await axios.get("https://limitless-sierra-11102.herokuapp.com/matched")
+        expect(response.status).toBe(200)
+        expect(response.data).toHaveProperty("count")
+        done()
+    }, 30000);
 })

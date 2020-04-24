@@ -35,7 +35,7 @@
         "sendMessageToConnectedUser": true,
         "conversationsRetrievedFormat": "small",
         "storeMessages": false,
-        "nbMaxConversations": 15,
-        "rateLimitPerHour": 1000
+        "nbMaxConversations": 100,
+        "rateLimitPerHour": 10000
     }
 }
