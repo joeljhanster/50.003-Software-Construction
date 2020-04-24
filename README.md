@@ -35,6 +35,7 @@ To execute the tests:
      2. `/establish_connection` API endpoint
      3. `/availability` API endpoint
      4. `/matched` API endpoint
+- Run `npm run test` to execute JEST testing
 
 - Also, for our stress testing, we wrote scripts under the `./RainbowNodeJS/stresstest` folder. The idea behind the `stresstest(i).js` scripts are such that each script does the following:
   1. Log into Guest Account
