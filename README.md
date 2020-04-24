@@ -3,25 +3,25 @@ Under 50.003 Software Construction, our group is tasked to work with Alcatel-Luc
 
 For this project, we will be exploring and implementing the MEVN framework, using MongoDB, Express, VueJS, and Node.js. MEVN is a free and open-source JavaScript software stack for building dynamic web sites and web applications. Because all components of the MEVN stack support programs that are written in JavaScript, MEVN applications can be written in one language for both server-side and client-side execution environments.
 
-To run the backend server using Node.js and Express:
+###To run the backend server using Node.js and Express:
 1. Change directory to the RainbowNodeJS folder: `cd RainbowNodeJS`
 2. Install all the necessary dependencies using the following command: `npm install -g`
 3. Run `npm start` to start the server
 4. Wait up to a minute before Rainbow chatbot is set up
 
-To access the API endpoints:
-- The backend server is currently hosted on heroku app. All API endpoints can be accessed via limitless-sierra-11102.herokuapp.com/. If server is run locally, use localhost:5000/.
-  1. To create guest account using first name and last name: limitless-sierra-11102.herokuapp.com/create_guest?firstName=&lastName=
-  2. To check the availability using guest ID: limitless-sierra-11102.herokuapp.com/establish_connection?id=
-  3. To check the total number of agents and the available number of agents: limitless-sierra-11102.herokuapp.com/availability
-  4. To check the number of matched agents to customers: limitless-sierra-11102.herokuapp.com/matched
+### To access the API endpoints:
+- The backend server is currently hosted on heroku app. All API endpoints can be accessed via https://limitless-sierra-11102.herokuapp.com/. If server is run locally, use localhost:5000/.
+  1. To create guest account using first name and last name: https://limitless-sierra-11102.herokuapp.com/create_guest?firstName=&lastName=
+  2. To check the availability using guest ID: https://limitless-sierra-11102.herokuapp.com/establish_connection?id=
+  3. To check the total number of agents and the available number of agents: https://limitless-sierra-11102.herokuapp.com/availability
+  4. To check the number of matched agents to customers: https://limitless-sierra-11102.herokuapp.com/matched
 
-To access the MongoDB database:
+### To access the MongoDB database:
 - The MongoDB database is currently hosted on heroku app. Access is limited only to us who has the privileges to see the dashboard.
-- To connect to the MongoClient, use the following url: mongodb://heroku_1whs0tq1:kq8e627o53cv9trrtd6q07n00i@ds119728.mlab.com:19728/heroku_1whs0tq1
+- To connect to the MongoClient, use the following url: `mongodb://heroku_1whs0tq1:kq8e627o53cv9trrtd6q07n00i@ds119728.mlab.com:19728/heroku_1whs0tq1`
 - This database consists of all the agents' data. It has 3 collections, namely banking, investment and generalEnquiries, which are the list of skills possbily acquired by the agents. In each collection, the agents' data are stored as JSON documents, where their presence status, id, display name, as well as chats received can be seen with its values.
 
-To execute the tests:
+### To execute the tests:
 - For our backend testing, we mainly used JEST testing to test for two things:
   1. MongoDB Database (under `./RainbowNodeJS/tests/mongodb.test.js`)
      1. Connection to MongoClient
