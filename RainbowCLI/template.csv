@@ -1,0 +1,39 @@
+__action__;loginEmail;password;title;firstName;lastName;nickName;businessPhone0;mobilePhone0;email0;jobTitle;userInfo1;userInfo2;country;language;timezone;isInitialized;visibility;authenticationType;service0;tags0;tags1;tags2;tags3;tags4;fileSharingCustomisation;userTitleNameCustomisation;tryNewUiCustomisation;softphoneOnlyCustomisation
+create;alice.johns@company.com;AzertY10*;Mrs;Alice;Johns;alicej;+49123456789;+4998765432;alice.johns@company.com;Logistic;RA DPT;DE CC;DEU;de-DE;Europe/Berlin;true;public;RAINBOW;Enterprise;airport;terminal_c;;;;;;;
+update;eric.lasalle@company.com;;;;;;;;;Tech Support;;;;;;;;;;;;;;;;;;
+delete;carol.jenkins@company.com;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+% Use this CSV template (UTF-8 encoded) to create/modify/remove members of a company
+% Caution: you will have to select 'text' format for all E.164 columns to be able to enter a leading '+'
+%
+% Field                 ;Optionality    ;Format                                                   ;Description
+%
+% __action__            ;Mandatory      ;<create|update|delete>                                   ;Action to perform
+% loginEmail            ;Mandatory      ;email address                                            ;Main or professional email used as login
+% password              ;Optional       ;text (>= 8 chars with 1 capital+1 number+1 special char) ;(e.g. This1Pwd!)
+% title                 ;Optional       ;text                                                     ;(e.g. Mr, Mrs, Dr, ...)
+% firstName             ;Optional       ;text
+% lastName              ;Optional       ;text
+% nickName              ;Optional       ;text
+% businessPhone0        ;Optional       ;E.164 number                                             ;DDI phone number (e.g. +33123456789)
+% mobilePhone0          ;Optional       ;E.164 number                                             ;Mobile phone number (e.g. +33601234567)
+% email0                ;Optional       ;email address                                            ;Personal email
+% jobTitle              ;Optional       ;text
+% userInfo1             ;Optional       ;text
+% userInfo2             ;Optional       ;text
+% country               ;Optional       ;ISO 3166-1 alpha-3                                       ;(e.g. FRA)
+% language              ;Optional       ;ISO 639-1 (en) / with ISO 31661 alpha-2 (en-US)
+% timezone              ;Optional       ;IANA tz database (Europe/Paris)
+% visibility            ;Optional       ;text (one of same_than_company, public, private, closed, isolated, none)
+% isInitialized         ;Optional       ;text (one of true, false)
+% authenticationType    ;Optional       ;text (one of RAINBOW, DEFAULT, SAML, OIDC)
+% service0              ;Optional       ;service Id among [] 
+% tags0                 ;Optional       ;text
+% tags1                 ;Optional       ;text
+% tags2                 ;Optional       ;text
+% tags3                 ;Optional       ;text
+% tags4                 ;Optional       ;text
+% fileSharingCustomisation                 ;Optional       ;text
+% userTitleNameCustomisation               ;Optional       ;text
+% tryNewUiCustomisation ;Optional       ;text
+% softphoneOnlyCustomisation ;Optional       ;text
