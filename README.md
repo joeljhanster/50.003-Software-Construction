@@ -3,7 +3,7 @@ Under 50.003 Software Construction, our group is tasked to work with Alcatel-Luc
 
 For this project, we will be exploring and implementing the MEVN framework, using MongoDB, Express, VueJS, and Node.js. MEVN is a free and open-source JavaScript software stack for building dynamic web sites and web applications. Because all components of the MEVN stack support programs that are written in JavaScript, MEVN applications can be written in one language for both server-side and client-side execution environments.
 
-###To run the backend server using Node.js and Express:
+### To run the backend server using Node.js and Express:
 1. Change directory to the RainbowNodeJS folder: `cd RainbowNodeJS`
 2. Install all the necessary dependencies using the following command: `npm install -g`
 3. Run `npm start` to start the server
